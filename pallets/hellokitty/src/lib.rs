@@ -20,7 +20,7 @@ pub struct HelloKitty(pub [u8;16]);
 // 继承substrate框架Trait接口  并注入相关类型
 pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
-	type KittyIndex: Parameter + AtLeast32Bit + Member + Bounded + Default + Copy;
+	type KittyIndex: Parameter  + Member + AtLeast32Bit + Bounded + Default + Copy;
 	type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 	type Randomness: Randomness<Self::Hash>;
 }
@@ -45,6 +45,21 @@ decl_storage! {
 
 		/// Get kitty price. None means not for sale.
 		pub KittyPrices get(fn kitty_price): map hasher(blake2_128_concat) T::KittyIndex => Option<BalanceOf<T>>;
+
+		//map: AccountId-> [KittyIndex1, KittyIndex2 ...]
+		pub KittyTotal get(fn kitty_total) : map hasher(blake2_128_concat) T::AccountId => vec::Vec<T::KittyIndex>;
+
+		//map: KittyIndex-> (Parent1,Parent2)
+        pub KittiesParents get(fn kitty_parents) : map hasher(blake2_128_concat) T::KittyIndex => (T::KittyIndex, T::KittyIndex);
+
+        //map: KittyIndex-> [Children1, Children2 ...]
+        pub KittiesChildren get(fn kitty_children): double_map hasher(blake2_128_concat) T::KittyIndex,  hasher(blake2_128_concat) T::KittyIndex => vec::Vec<T::KittyIndex>;
+
+		//map: KittyIndex-> [Sibling1, Sibling2 ...]
+        pub KittiesSibling get(fn kitty_sibling): map hasher(blake2_128_concat) T::KittyIndex => vec::Vec<T::KittyIndex>;
+
+        //map: KittyIndex-> [Partner1, Partner2 ...]
+        pub KittiesPartner get(fn kitty_partner) : map hasher(blake2_128_concat) T::KittyIndex => vec::Vec<T::KittyIndex>;
 	}
 }
 // 自定义错误类型
@@ -56,6 +71,7 @@ decl_error! {
 		RequireOwner,
 		NotForSale,
 		PriceTooLow,
+		TransferToSelf, 
 	}
 }
 
