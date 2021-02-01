@@ -7,19 +7,20 @@ use frame_support::{
 };
 use sp_io::hashing::blake2_128;
 use frame_system::{self as system, ensure_signed};
-use sp_runtime::{DispatchError, traits::{AtLeast32Bit, Bounded, Member}};
+use sp_runtime::{DispatchError,RuntimeDebug, traits::{AtLeast32Bit, Bounded, Member},};
 use crate::linked_item::{LinkedList, LinkedItem};
+
 
 mod linked_item;
 
 // 定义HelloKitty数据结构--元组结构体，其成员为数组长度为16，数组元素属性为u8
-#[derive(Encode,Decode)]
+#[derive(Encode , Decode, RuntimeDebug, Clone, PartialEq)]
 pub struct HelloKitty(pub [u8;16]);
 
 // 继承substrate框架Trait接口  并注入相关类型
 pub trait Trait: frame_system::Trait {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
-	type KittyIndex: Parameter + Member + AtLeast32Bit + Bounded + Default + Copy+From<i32>;
+	type KittyIndex: Parameter + AtLeast32Bit + Member + Bounded + Default + Copy;
 	type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 	type Randomness: Randomness<Self::Hash>;
 }
@@ -267,7 +268,8 @@ impl<T: Trait> Module<T> {
 	fn insert_kitty(owner: &T::AccountId, kitty_id: T::KittyIndex, hello_kitty: HelloKitty) {
 		// Create and store hello_kitty
 		Kitties::<T>::insert(kitty_id, hello_kitty);
-		KittiesCount::<T>::put(kitty_id + 1.into());
+        // TODO 加1
+		KittiesCount::<T>::put(kitty_id);// + 1.into()
 
 		Self::insert_owned_kitty(owner, kitty_id);
 	}

@@ -23,6 +23,7 @@ use sp_version::RuntimeVersion;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 
+
 // A few exports that help ease life for downstream crates.
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -38,8 +39,12 @@ pub use frame_support::{
 	},
 };
 
-/// Import the template pallet.
+/// Import the template pallet.  
 pub use pallet_template;
+
+// 第一步 first: 导入新增得pallet模块 （同时在runtime的Cargo,toml中引入pallet_hellokitty的依赖）
+// 导入new pallet of hellokitty 
+pub use pallet_hellokitty;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -265,8 +270,18 @@ impl pallet_sudo::Trait for Runtime {
 impl pallet_template::Trait for Runtime {
 	type Event = Event;
 }
-
-// Create the runtime by composing the FRAME pallets that were previously configured.
+//  第二步 Second： 为Runtime 实现新增的pallet功能 并注入该pallet需要用到的自定义类型 以及 parameter_types! 指定常量类型数据(如果有)
+impl pallet_hellokitty::Trait for Runtime {
+	type Event = Event;  // 默认事件类型
+	type Randomness = RandomnessCollectiveFlip; // 随机数生成工具
+	type KittyIndex = u32;  // kitty id
+	type Currency = Balances; // 资产类型
+}
+// TODO pallet_hellokitty parameter_types
+// parameter_types! {
+// 	pub const TransactionByteFee: Balance = 1;
+// }
+//  第三步 Third: Create the runtime by composing the FRAME pallets that were previously configured. 第三步 新pallet加入Runtime构造初始化
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -283,6 +298,7 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
+		HellokittysModule: pallet_hellokitty::{Module, Call, Storage, Event<T>},
 	}
 );
 
