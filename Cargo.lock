@@ -2093,6 +2093,17 @@ dependencies = [
 [[package]]
 name = "hellokitty"
 version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-randomness-collective-flip",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
 
 [[package]]
 name = "hermit-abi"
