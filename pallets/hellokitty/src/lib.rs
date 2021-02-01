@@ -83,6 +83,7 @@ decl_event!(
 );
 
 // 为pallet实现的调用函数
+// 参考文档：https://shimo.im/docs/Q6HwhRkHvHt8TCRY/read
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		type Error = Error<T>;
