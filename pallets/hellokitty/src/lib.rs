@@ -9,7 +9,7 @@ use sp_io::hashing::blake2_128;
 use frame_system::{self as system, ensure_signed};
 use sp_runtime::{DispatchError,RuntimeDebug, traits::{AtLeast32Bit, Bounded, Member},};
 use crate::linked_item::{LinkedList, LinkedItem};
-
+use sp_std::vec;
 
 mod linked_item;
 
@@ -252,11 +252,6 @@ decl_module! {
 	}
 }
 
-// 公共工具方法
-fn combine_dna(dna1: u8, dna2: u8, selector: u8) -> u8 {
-	(selector & dna1) | (!selector & dna2)
-}
-
 // 当前pallet module实现的行为方法
 impl<T: Trait> Module<T> {
 	fn random_value(sender: &T::AccountId) -> [u8; 16] {
@@ -284,12 +279,61 @@ impl<T: Trait> Module<T> {
 	fn insert_kitty(owner: &T::AccountId, kitty_id: T::KittyIndex, hello_kitty: HelloKitty) {
 		// Create and store hello_kitty
 		Kitties::<T>::insert(kitty_id, hello_kitty);
-        // TODO 加1
-		KittiesCount::<T>::put(kitty_id);// + 1.into()
-
+		// TODO 加1 1.into()
+		let incre_1 = 1 as u32;
+		KittiesCount::<T>::put(kitty_id + incre_1.into());
 		Self::insert_owned_kitty(owner, kitty_id);
 	}
+	// 记录父母
+	fn update_kitties_parents(
+		children: T::KittyIndex,
+		father: T::KittyIndex,
+		mother: T::KittyIndex,
+	) {
+		<KittiesParents<T>>::insert(children, (father, mother));
+	}
 
+	// 记录孩子
+	fn update_kitties_children(
+		children: T::KittyIndex,
+		father: T::KittyIndex,
+		mother: T::KittyIndex,
+	) {
+		if <KittiesChildren<T>>::contains_key(father, mother) {
+			let _ = <KittiesChildren<T>>::mutate(father, mother, |val| val.push(children));
+		} else {
+			<KittiesChildren<T>>::insert(father, mother, vec![children]);
+		}
+	}
+
+	// 记录兄弟姐妹
+	fn update_kitties_sibling(kitty_id: T::KittyIndex) {
+		let (father, mother) = KittiesParents::<T>::get(kitty_id);
+		
+		// 如果父母之前生过兄弟姐妹
+		if <KittiesChildren<T>>::contains_key(father, mother) {
+			let val: vec::Vec<T::KittyIndex> = KittiesChildren::<T>::get(father, mother);
+			let reserve_val: vec::Vec<T::KittyIndex> =
+				val.into_iter().filter(|&val| val != kitty_id).collect();
+			<KittiesSibling<T>>::insert(kitty_id, reserve_val);
+		} else {
+			// 如果没有兄弟姐妹
+			<KittiesSibling<T>>::insert(kitty_id, vec::Vec::<T::KittyIndex>::new());
+		}
+	}
+	// 更新配偶
+	fn update_kitties_partner(partner1: T::KittyIndex, partner2: T::KittyIndex) {
+		if KittiesPartner::<T>::contains_key(&partner1){
+			let val: vec::Vec<T::KittyIndex> = KittiesPartner::<T>::get(partner1);
+			let reserve_val: vec::Vec<T::KittyIndex> =
+				val.into_iter().filter(|&val| val == partner2).collect();
+			if reserve_val.len() == 0 {
+				KittiesPartner::<T>::mutate(&partner1, |val| val.push(partner2));
+			}
+		}else{
+			KittiesPartner::<T>::insert(partner1, vec![partner2]);
+		};
+	}
 	fn do_breed(sender: &T::AccountId, kitty_id_1: T::KittyIndex, kitty_id_2: T::KittyIndex) -> sp_std::result::Result<T::KittyIndex, DispatchError> {
 		let kitty1 = Self::kitties(kitty_id_1).ok_or(Error::<T>::InvalidKittyId)?;
 		let kitty2 = Self::kitties(kitty_id_2).ok_or(Error::<T>::InvalidKittyId)?;
@@ -311,8 +355,21 @@ impl<T: Trait> Module<T> {
 		for i in 0..kitty1_dna.len() {
 			new_dna[i] = combine_dna(kitty1_dna[i], kitty2_dna[i], selector[i]);
 		}
-
+        // save new kitty
 		Self::insert_kitty(sender, kitty_id, HelloKitty(new_dna));
+
+		// 更新配偶
+        Self::update_kitties_partner(kitty_id_1, kitty_id_2);
+        Self::update_kitties_partner(kitty_id_2,kitty_id_1);
+
+        // 记录父母
+        Self::update_kitties_parents(kitty_id, kitty_id_1, kitty_id_2);
+
+        // 记录孩子
+        Self::update_kitties_children(kitty_id, kitty_id_1, kitty_id_2);
+
+       // 记录兄弟姐妹
+        Self::update_kitties_sibling(kitty_id);
 
 		Ok(kitty_id)
 	}
@@ -321,6 +378,12 @@ impl<T: Trait> Module<T> {
 		<OwnedKittiesList<T>>::remove(&from, kitty_id);
 		Self::insert_owned_kitty(&to, kitty_id);
 	}
+}
+
+
+// 公共工具方法
+fn combine_dna(dna1: u8, dna2: u8, selector: u8) -> u8 {
+	(selector & dna1) | (!selector & dna2)
 }
 
 /// tests for this module
