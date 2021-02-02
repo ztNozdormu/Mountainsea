@@ -107,7 +107,6 @@ decl_event!(
 );
 
 // 为pallet实现的调用函数
-// 参考文档：https://shimo.im/docs/Q6HwhRkHvHt8TCRY/read
 decl_module! {
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
 		type Error = Error<T>;
@@ -117,7 +116,7 @@ decl_module! {
 		/// Create a new kitty
 		#[weight = 0]
 		pub fn create(origin, amount: BalanceOf<T>) {
-			let originC = origin.clone();
+			let origin_clone = origin.clone();
 			let sender = ensure_signed(origin)?;
 			let kitty_id = Self::next_kitty_id()?;
 
@@ -128,7 +127,7 @@ decl_module! {
 			let hello_kitty = HelloKitty(dna);
 			Self::insert_kitty(&sender, kitty_id, hello_kitty);
 
-			Self::reserve_funds(originC, amount);
+			Self::reserve_funds(origin_clone, amount);
 
 			Self::deposit_event(RawEvent::Created(sender, kitty_id));
 		}
@@ -136,12 +135,12 @@ decl_module! {
 		/// Breed kitties
 		#[weight = 0]
 		pub fn breed(origin, kitty_id_1: T::KittyIndex, kitty_id_2: T::KittyIndex, amount: BalanceOf<T>) {
-			let originC = origin.clone();
+			let origin_clone = origin.clone();
 			let sender = ensure_signed(origin)?;
 
 			let new_kitty_id = Self::do_breed(&sender, kitty_id_1, kitty_id_2)?;
 
-			Self::reserve_funds(originC, amount);
+			Self::reserve_funds(origin_clone, amount);
 
 			Self::deposit_event(RawEvent::Created(sender, new_kitty_id));
 		}
@@ -149,14 +148,14 @@ decl_module! {
 		/// Transfer a kitty to new owner
 		#[weight = 0]
 		pub fn transfer(origin, to: T::AccountId, kitty_id: T::KittyIndex, amount: BalanceOf<T>) {
-			let originC = origin.clone();
+			let origin_clone = origin.clone();
 			let sender = ensure_signed(origin)?;
 
 			ensure!(<OwnedKitties<T>>::contains_key((&sender, Some(kitty_id))), Error::<T>::RequireOwner);
 
 			Self::do_transfer(&sender, &to, kitty_id);
 
-			Self::unreserve_funds(originC, amount);
+			Self::unreserve_funds(origin_clone, amount);
 
 			Self::deposit_event(RawEvent::Transferred(sender, to, kitty_id));
 		}
