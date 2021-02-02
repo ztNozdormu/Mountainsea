@@ -13,6 +13,13 @@ use sp_std::vec;
 
 mod linked_item;
 
+
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 // 定义HelloKitty数据结构--元组结构体，其成员为数组长度为16，数组元素属性为u8
 #[derive(Encode , Decode, RuntimeDebug, Clone, PartialEq)]
 pub struct HelloKitty(pub [u8;16]);
@@ -279,10 +286,15 @@ impl<T: Trait> Module<T> {
 	fn insert_kitty(owner: &T::AccountId, kitty_id: T::KittyIndex, hello_kitty: HelloKitty) {
 		// Create and store hello_kitty
 		Kitties::<T>::insert(kitty_id, hello_kitty);
-		// TODO 加1 1.into()
 		let incre_1 = 1 as u32;
 		KittiesCount::<T>::put(kitty_id + incre_1.into());
 		Self::insert_owned_kitty(owner, kitty_id);
+		// 更新kitty总数 kittyTotal
+		if KittyTotal::<T>::contains_key(&owner){
+			KittyTotal::<T>::mutate(owner, |val| val.push(kitty_id));
+		}else{
+			KittyTotal::<T>::insert(owner, vec![kitty_id]);
+		}
 	}
 	// 记录父母
 	fn update_kitties_parents(
@@ -377,6 +389,9 @@ impl<T: Trait> Module<T> {
 	fn do_transfer(from: &T::AccountId, to: &T::AccountId, kitty_id: T::KittyIndex)  {
 		<OwnedKittiesList<T>>::remove(&from, kitty_id);
 		Self::insert_owned_kitty(&to, kitty_id);
+		// 更新个人kittys总数
+		KittyTotal::<T>::mutate(&from, |val| val.retain(|&temp| temp == kitty_id));
+		KittyTotal::<T>::mutate(&to, |val| val.push(kitty_id));
 	}
 }
 
