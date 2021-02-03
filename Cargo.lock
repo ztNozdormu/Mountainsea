@@ -3590,6 +3590,7 @@ dependencies = [
  "pallet-balances",
  "pallet-grandpa",
  "pallet-hellokitty",
+ "pallet-helloocw",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-template",
