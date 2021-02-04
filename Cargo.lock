@@ -3722,6 +3722,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d3b63360ec3cb337817c2dbd47ab4a0f170d285d8e5a2064600f3def1402397"
 
 [[package]]
+name = "ocw-currency-price"
+version = "2.0.1"
+dependencies = [
+ "alt_serde",
+ "alt_serde_json",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "parking_lot 0.10.2",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "once_cell"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
