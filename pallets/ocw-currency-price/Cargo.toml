@@ -1,0 +1,9 @@
+[package]
+name = "ocw-currency-price"
+version = "2.0.1"
+authors = ["Nozdormu <w1999wtw3537@sina.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
