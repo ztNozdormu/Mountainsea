@@ -1,5 +1,6 @@
 ## ocw-currency-price pallet desc
   离线工作机 处理数字通证价格
+  作业参考 ：https://github.com/NetGodFather/SubstrateStarter
 ## design
 
   ### 简介
@@ -34,6 +35,9 @@
               5. 提供去中心化数据分析服务功能
               6. 提供去中心化网格交易服务功能
               7. 智能合约业务
+              8. 对外提供去中心化数据服务
+                - 数据流
+                - 结合隐私技术
 
      区块链角色：收集者节点  验证者节点 白皮书、经济模型会用到这些概念
 

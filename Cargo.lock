@@ -3729,6 +3729,7 @@ dependencies = [
  "alt_serde_json",
  "frame-support",
  "frame-system",
+ "pallet-timestamp",
  "parity-scale-codec",
  "parking_lot 0.10.2",
  "sp-core",
