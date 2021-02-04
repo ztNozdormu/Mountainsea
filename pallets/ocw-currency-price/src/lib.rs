@@ -457,7 +457,7 @@
 // 			Call::submit_number_unsigned_with_signed_payload(ref payload, ref signature) => {
 // 				if !SignedPayload::<T>::verify::<T::AuthorityId>(payload, signature.clone()) {
 // 					return InvalidTransaction::BadProof.into();
-// 				}
+// 				}成都
 // 				valid_tx(b"submit_number_unsigned_with_signed_payload".to_vec())
 // 			},
 // 			_ => InvalidTransaction::Call.into(),
