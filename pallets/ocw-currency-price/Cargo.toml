@@ -39,5 +39,6 @@ std = [
   'sp-io/std',
   'sp-runtime/std',
   'sp-std/std',
+  'pallet-timestamp/std',
 ]
 
